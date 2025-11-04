@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الفنيين - لوحة المسؤول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        
+        .tech-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .skill-tag {
+            background-color: #e0f7fa;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .remove-skill {
+            cursor: pointer;
+            color: #f44336;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3d8b40;
+        }
+        
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .map-container {
+            height: 300px;
+            margin-top: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px dashed #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        
+        .image-upload:hover {
+            border-color: #4CAF50;
+        }
+        
+        .image-upload img {
+            max-width: 200px;
+            max-height: 200px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        
+        /* نافذة تسجيل الدخول */
+        .auth-modal {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .auth-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .auth-content h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            color: #f44336;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        /* شاشة التحميل */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* زر إنشاء مسؤول (للتطوير فقط) */
+        .dev-tools {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p id="loading-text">جاري التحميل...</p>
+    </div>
+    
+    <!-- نافذة تسجيل الدخول -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-content">
+            <h2>تسجيل دخول المسؤول</h2>
+            <p class="error-message" id="login-error"></p>
+            <div class="form-group">
+                <input type="email" id="admin-email" placeholder="البريد الإلكتروني">
+            </div>
+            <div class="form-group">
+                <input type="password" id="admin-password" placeholder="كلمة المرور">
+            </div>
+            <button class="btn" id="admin-login-btn">تسجيل الدخول</button>
+        </div>
+    </div>
+    
+    <!-- واجهة إضافة الفني -->
+    <div class="container" id="app-content" style="display: none;">
+        <div class="header">
+            <h1>إضافة فني جديد</h1>
+            <p>املأ النموذج التالي لإضافة فني جديد إلى النظام</p>
+        </div>
+        
+        <button id="logout-btn" class="btn btn-danger" style="width: auto; margin-bottom: 20px;">تسجيل الخروج</button>
+        
+        <div class="tech-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">اسم الفني الكامل</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialty">التخصص الرئيسي</label>
+                    <select id="specialty" required>
+                        <option value="">اختر التخصص</option>
+                        <option value="كهربائي">كهربائي</option>
+                        <option value="سباك">سباك</option>
+                        <option value="تكييف وتبريد">تكييف وتبريد</option>
+                        <option value="نجار">نجار</option>
+                        <option value="بناء">بناء</option>
+                        <option value="دهان">دهان</option>
+                        <option value="أجهزة منزلية">أجهزة منزلية</option>
+                        <option value="نظافة">نظافة</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">السعر بالساعة (ر.س)</label>
+                    <input type="number" id="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="experience">سنوات الخبرة</label>
+                    <input type="number" id="experience" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>صورة الفني</label>
+                <div class="image-upload" id="image-upload">
+                    <div class="upload-icon">📷</div>
+                    <p>انقر لرفع صورة الفني</p>
+                    <img id="preview-image" src="" alt="صورة الفني">
+                    <input type="file" id="photo" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">وصف قصير</label>
+                <textarea id="bio" placeholder="معلومات عن الفني وخبراته..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-skill">المهارات</label>
+                <div class="form-row">
+                    <input type="text" id="new-skill" placeholder="أضف مهارة جديدة">
+                    <button type="button" class="btn" id="add-skill" style="width: auto; padding: 0 15px;">إضافة</button>
+                </div>
+                <div class="skills-container" id="skills-container"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>موقع الفني</label>
+                <div class="map-container" id="map"></div>
+                <button type="button" class="btn" id="get-location" style="margin-top: 10px;">تحديد الموقع الحالي</button>
+                <input type="hidden" id="latitude">
+                <input type="hidden" id="longitude">
+            </div>
+            
+            <button type="button" class="btn" id="save-tech" disabled>حفظ الفني</button>
+        </div>
+    </div>
+
+    <!-- أدوات المطور (للتطوير فقط) -->
+    <div class="dev-tools" id="dev-tools" style="display: none;">
+        <button class="btn" id="create-admin-btn">إنشاء مسؤول جديد</button>
+    </div>
+
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpePdjO7sNPZ9uc32qa6GcO9vF7CXZ6wA",
+            authDomain: "gotest-w3g8on.firebaseapp.com",
+            projectId: "gotest-w3g8on",
+            storageBucket: "gotest-w3g8on.appspot.com",
+            messagingSenderId: "399090151688",
+            appId: "1:399090151688:web:dd5bfb2c0192fd99ab7cbd"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // متغيرات التطبيق
+        let map;
+        let marker;
+        let selectedLocation = null;
+        let selectedImage = null;
+        let skills = [];
+        let currentAdmin = null;
+
+        // عناصر DOM
+        const loadingOverlay = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const authModal = document.getElementById('auth-modal');
+        const appContent = document.getElementById('app-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginError = document.getElementById('login-error');
+        const devTools = document.getElementById('dev-tools');
+        const createAdminBtn = document.getElementById('create-admin-btn');
+
+        // وظائف المساعدة
+        function showLoading(text = 'جاري التحميل...') {
+            loadingText.textContent = text;
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function showError(message, element = null) {
+            if (element) {
+                element.textContent = message;
+                element.style.display = 'block';
+            } else {
+                alert(message);
+            }
+        }
+
+        function hideError(element) {
+            element.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        // تهيئة الخريطة
+        function initMap() {
+            map = L.map('map').setView([24.7136, 46.6753], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            map.on('click', function(e) {
+                updateLocationMarker(e.latlng);
+            });
+        }
+
+        function updateLocationMarker(latlng) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            
+            marker = L.marker(latlng).addTo(map)
+                .bindPopup("موقع الفني")
+                .openPopup();
+            
+            selectedLocation = latlng;
+            document.getElementById('latitude').value = latlng.lat;
+            document.getElementById('longitude').value = latlng.lng;
+        }
+
+        // تحديد الموقع الحالي
+        document.getElementById('get-location').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                showLoading('جاري تحديد الموقع...');
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        updateLocationMarker({ lat, lng });
+                        map.setView([lat, lng], 15);
+                        hideLoading();
+                    },
+                    function(error) {
+                        hideLoading();
+                        showError("حدث خطأ أثناء محاولة تحديد الموقع: " + 
+                            (error.code === error.PERMISSION_DENIED ? 
+                             "تم رفض الإذن بالوصول إلى الموقع" : 
+                             error.message));
+                    },
+                    { timeout: 10000 }
+                );
+            } else {
+                showError("المتصفح لا يدعم خدمة تحديد الموقع");
+            }
+        });
+
+        // رفع الصورة
+        document.getElementById('image-upload').addEventListener('click', function() {
+            document.getElementById('photo').click();
+        });
+        
+        document.getElementById('photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.match('image.*')) {
+                    showError('الرجاء اختيار ملف صورة فقط (JPEG, PNG)');
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    showError('حجم الصورة يجب أن يكون أقل من 5MB');
+                    return;
+                }
+                
+                selectedImage = file;
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview-image');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    document.querySelector('#image-upload .upload-icon').style.display = 'none';
+                    document.querySelector('#image-upload p').textContent = 'انقر لتغيير الصورة';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // إدارة المهارات
+        document.getElementById('add-skill').addEventListener('click', function() {
+            const skillInput = document.getElementById('new-skill');
+            const skill = skillInput.value.trim();
+            
+            if (skill && !skills.includes(skill)) {
+                skills.push(skill);
+                renderSkills();
+                skillInput.value = '';
+            }
+        });
+
+        function renderSkills() {
+            const container = document.getElementById('skills-container');
+            container.innerHTML = '';
+            
+            skills.forEach((skill, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'skill-tag';
+                tag.innerHTML = `
+                    ${skill}
+                    <span class="remove-skill" data-index="${index}">✕</span>
+                `;
+                container.appendChild(tag);
+            });
+            
+            document.querySelectorAll('.remove-skill').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    skills.splice(index, 1);
+                    renderSkills();
+                });
+            });
+        }
+
+        // حفظ بيانات الفني
+        document.getElementById('save-tech').addEventListener('click', async function() {
+            const name = document.getElementById('name').value.trim();
+            const specialty = document.getElementById('specialty').value;
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const price = parseFloat(document.getElementById('price').value);
+            const experience = parseInt(document.getElementById('experience').value);
+            const bio = document.getElementById('bio').value.trim();
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            
+            // التحقق من البيانات المطلوبة
+            if (!name || !specialty || !phone || !email || !price || !experience || !latitude || !longitude) {
+                showError('الرجاء تعبئة جميع الحقول المطلوبة');
+                return;
+            }
+            
+            if (!selectedImage) {
+                showError('الرجاء اختيار صورة للفني');
+                return;
+            }
+            
+            if (!currentAdmin) {
+                showError('الجلسة منتهية، يرجى تسجيل الدخول مرة أخرى');
+                return;
+            }
+            
+            try {
+                showLoading('جاري حفظ بيانات الفني...');
+                
+                // رفع الصورة
+                const storageRef = storage.ref()
+                    .child(`technicians/${currentAdmin.uid}/${Date.now()}_${selectedImage.name}`);
+                const uploadTask = storageRef.put(selectedImage);
+                
+                await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed',
+                        null,
+                        (error) => reject(error),
+                        () => resolve()
+                    );
+                });
+                
+                const photoURL = await uploadTask.snapshot.ref.getDownloadURL();
+                
+                // حفظ بيانات الفني
+                const techData = {
+                    name: name,
+                    specialty: specialty,
+                    phone: phone,
+                    email: email,
+                    price: price,
+                    experience: experience,
+                    bio: bio,
+                    skills: skills,
+                    photoURL: photoURL,
+                    location: new firebase.firestore.GeoPoint(
+                        parseFloat(latitude),
+                        parseFloat(longitude)
+                    ),
+                    rating: 0,
+                    ratingCount: 0,
+                    availability: true,
+                    addedBy: currentAdmin.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('technicians').add(techData);
+                
+                hideLoading();
+                showSuccess('تم إضافة الفني بنجاح!');
+                resetForm();
+            } catch (error) {
+                hideLoading();
+                console.error('Error adding technician:', error);
+                showError('حدث خطأ أثناء إضافة الفني: ' + error.message);
+            }
+        });
+
+        function resetForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('specialty').selectedIndex = 0;
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('experience').value = '';
+            document.getElementById('bio').value = '';
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('preview-image').style.display = 'none';
+            document.querySelector('#image-upload .upload-icon').style.display = 'block';
+            document.querySelector('#image-upload p').textContent = 'انقر لرفع صورة الفني';
+            document.getElementById('photo').value = '';
+            skills = [];
+            renderSkills();
+            
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            
+            selectedImage = null;
+            selectedLocation = null;
+        }
+
+        // نظام المصادقة
+        async function checkAdminPermissions(user) {
+            try {
+                // التحقق من UID أولاً
+                const adminDoc = await db.collection('admins').doc(user.uid).get();
+                if (adminDoc.exists) {
+                    return true;
+                }
+                
+                // إذا لم يوجد بالـ UID، نبحث بالإيميل
+                const adminsByEmail = await db.collection('admins')
+                    .where('email', '==', user.email)
+                    .limit(1)
+                    .get();
+                
+                if (!adminsByEmail.empty) {
+                    // ننشئ مستند جديد بالـ UID الصحيح
+                    const adminData = adminsByEmail.docs[0].data();
+                    await db.collection('admins').doc(user.uid).set(adminData);
+                    
+                    // نحذف المستند القديم إذا كان مختلفاً عن الـ UID الجديد
+                    if (adminsByEmail.docs[0].id !== user.uid) {
+                        await db.collection('admins').doc(adminsByEmail.docs[0].id).delete();
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                return false;
+            }
+        }
+
+        function initAuth() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    try {
+                        showLoading('جاري التحقق من الصلاحيات...');
+                        const isAdmin = await checkAdminPermissions(user);
+                        
+                        if (isAdmin) {
+                            currentAdmin = {
+                                uid: user.uid,
+                                email: user.email
+                            };
+                            appContent.style.display = 'block';
+                            authModal.style.display = 'none';
+                            document.getElementById('save-tech').disabled = false;
+                            initMap();
+                        } else {
+                            await auth.signOut();
+                            showError('ليس لديك صلاحيات المسؤول', loginError);
+                            authModal.style.display = 'flex';
+                        }
+                    } catch (error) {
+                        console.error('Error in auth state change:', error);
+                        showError('حدث خطأ في التحقق من الصلاحيات', loginError);
+                    } finally {
+                        hideLoading();
+                    }
+                } else {
+                    authModal.style.display = 'flex';
+                    appContent.style.display = 'none';
+                    currentAdmin = null;
+                }
+            });
+        }
+
+        // تسجيل الدخول
+        document.getElementById('admin-login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            
+            if (!email || !password) {
+                showError('الرجاء إدخال البريد الإلكتروني وكلمة المرور', loginError);
+                return;
+            }
+            
+            try {
+                showLoading('جاري تسجيل الدخول...');
+                hideError(loginError);
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                hideLoading();
+                console.error('Login error:', error);
+                
+                let errorMessage = 'فشل تسجيل الدخول: ';
+                if (error.code === 'auth/wrong-password') {
+                    errorMessage += 'كلمة المرور غير صحيحة';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage += 'لا يوجد حساب مرتبط بهذا البريد الإلكتروني';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage += 'بريد إلكتروني غير صالح';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage, loginError);
+            }
+        });
+
+        // تسجيل الخروج
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                showLoading('جاري تسجيل الخروج...');
+                await auth.signOut();
+                window.location.reload();
+            } catch (error) {
+                hideLoading();
+                console.error('Logout error:', error);
+                showError('حدث خطأ أثناء تسجيل الخروج');
+            }
+        });
+
+        // إنشاء مسؤول جديد (للتطوير فقط)
+        async function createAdminUser() {
+            const email = prompt("أدخل بريد المسؤول:");
+            const password = prompt("أدخل كلمة مرور المسؤول (6 أحرف على الأقل):");
+            
+            if (!email || !password || password.length < 6) {
+                alert('الرجاء إدخال بيانات صحيحة (كلمة المرور يجب أن تكون 6 أحرف على الأقل)');
+                return;
+            }
+            
+            try {
+                showLoading('جاري إنشاء حساب المسؤول...');
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                await db.collection('admins').doc(userCredential.user.uid).set({
+                    email: email,
+                    name: 'مسؤول',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                hideLoading();
+                showSuccess('تم إنشاء المسؤول بنجاح! يمكنك الآن تسجيل الدخول باستخدام هذا الحساب');
+            } catch (error) {
+                hideLoading();
+                console.error('Error creating admin:', error);
+                
+                let errorMessage = 'حدث خطأ أثناء إنشاء المسؤول: ';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage += 'هذا البريد الإلكتروني مستخدم بالفعل';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage += 'بريد إلكتروني غير صالح';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage += 'كلمة المرور ضعيفة جداً';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        // تهيئة التطبيق
+        function initApp() {
+            // عرض أدوات المطور إذا كان في وضع التطوير
+            if (window.location.href.includes('dev')) {
+                devTools.style.display = 'block';
+                createAdminBtn.addEventListener('click', createAdminUser);
+            }
+            
+            initAuth();
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

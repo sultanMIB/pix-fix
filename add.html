@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة فني جديد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        
+        .tech-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .skill-tag {
+            background-color: #e0f7fa;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .remove-skill {
+            cursor: pointer;
+            color: #f44336;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #3d8b40;
+        }
+        
+        .map-container {
+            height: 300px;
+            margin-top: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px dashed #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .image-upload img {
+            max-width: 200px;
+            max-height: 200px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>إضافة فني جديد</h1>
+            <p>املأ النموذج التالي لإضافة فني جديد إلى النظام</p>
+        </div>
+        
+        <div class="tech-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">اسم الفني الكامل</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialty">التخصص الرئيسي</label>
+                    <select id="specialty" required>
+                        <option value="">اختر التخصص</option>
+                        <option value="كهربائي">كهربائي</option>
+                        <option value="سباك">سباك</option>
+                        <option value="تكييف وتبريد">تكييف وتبريد</option>
+                        <option value="نجار">نجار</option>
+                        <option value="بناء">بناء</option>
+                        <option value="دهان">دهان</option>
+                        <option value="أجهزة منزلية">أجهزة منزلية</option>
+                        <option value="نظافة">نظافة</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">السعر بالساعة (ر.س)</label>
+                    <input type="number" id="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="experience">سنوات الخبرة</label>
+                    <input type="number" id="experience" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>صورة الفني</label>
+                <div class="image-upload" id="image-upload">
+                    <div class="upload-icon">📷</div>
+                    <p>انقر لرفع صورة الفني</p>
+                    <img id="preview-image" src="" alt="صورة الفني">
+                    <input type="file" id="photo" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">وصف قصير</label>
+                <textarea id="bio" placeholder="معلومات عن الفني وخبراته..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-skill">المهارات</label>
+                <div class="form-row">
+                    <input type="text" id="new-skill" placeholder="أضف مهارة جديدة">
+                    <button type="button" class="btn" id="add-skill" style="width: auto; padding: 0 15px;">إضافة</button>
+                </div>
+                <div class="skills-container" id="skills-container"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>موقع الفني</label>
+                <div class="map-container" id="map"></div>
+                <button type="button" class="btn" id="get-location" style="margin-top: 10px;">تحديد الموقع الحالي</button>
+                <input type="hidden" id="latitude">
+                <input type="hidden" id="longitude">
+            </div>
+            
+            <button type="button" class="btn" id="save-tech">حفظ الفني</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- أضف هذه السطور قبل script الخاص بك -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpePdjO7sNPZ9uc32qa6GcO9vF7CXZ6wA",
+            authDomain: "gotest-w3g8on.firebaseapp.com",
+            projectId: "gotest-w3g8on",
+            storageBucket: "gotest-w3g8on.appspot.com",
+            messagingSenderId: "399090151688",
+            appId: "1:399090151688:web:dd5bfb2c0192fd99ab7cbd"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // متغيرات التطبيق
+        let map;
+        let marker;
+        let selectedLocation = null;
+        let selectedImage = null;
+        let skills = [];
+
+
+        
+        // تهيئة الخريطة
+        function initMap() {
+            map = L.map('map').setView([24.7136, 46.6753], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // إضافة علامة عند النقر على الخريطة
+            map.on('click', function(e) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                
+                marker = L.marker(e.latlng).addTo(map)
+                    .bindPopup("موقع الفني")
+                    .openPopup();
+                
+                selectedLocation = e.latlng;
+                document.getElementById('latitude').value = e.latlng.lat;
+                document.getElementById('longitude').value = e.latlng.lng;
+            });
+        }
+
+        
+
+        // تحديد الموقع الحالي
+        document.getElementById('get-location').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (marker) {
+                            map.removeLayer(marker);
+                        }
+                        
+                        map.setView([lat, lng], 15);
+                        marker = L.marker([lat, lng]).addTo(map)
+                            .bindPopup("موقع الفني")
+                            .openPopup();
+                            
+                        selectedLocation = { lat, lng };
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                    },
+                    function(error) {
+                        alert("حدث خطأ أثناء محاولة تحديد الموقع: " + error.message);
+                    }
+                );
+            } else {
+                alert("المتصفح لا يدعم خدمة تحديد الموقع");
+            }
+        });
+
+        // رفع الصورة
+        document.getElementById('image-upload').addEventListener('click', function() {
+            document.getElementById('photo').click();
+        });
+        
+        document.getElementById('photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedImage = file;
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview-image');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    document.querySelector('#image-upload .upload-icon').style.display = 'none';
+                    document.querySelector('#image-upload p').textContent = 'انقر لتغيير الصورة';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // إضافة مهارة
+        document.getElementById('add-skill').addEventListener('click', function() {
+            const skillInput = document.getElementById('new-skill');
+            const skill = skillInput.value.trim();
+            
+            if (skill && !skills.includes(skill)) {
+                skills.push(skill);
+                renderSkills();
+                skillInput.value = '';
+            }
+        });
+
+        // عرض المهارات المضافة
+        function renderSkills() {
+            const container = document.getElementById('skills-container');
+            container.innerHTML = '';
+            
+            skills.forEach((skill, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'skill-tag';
+                tag.innerHTML = `
+                    ${skill}
+                    <span class="remove-skill" data-index="${index}">✕</span>
+                `;
+                container.appendChild(tag);
+            });
+            
+            // إضافة مستمعين لأزرار الحذف
+            document.querySelectorAll('.remove-skill').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    skills.splice(index, 1);
+                    renderSkills();
+                });
+            });
+        }
+
+        // حفظ بيانات الفني
+document.getElementById('save-tech').addEventListener('click', async function() {
+    const name = document.getElementById('name').value.trim();
+    const specialty = document.getElementById('specialty').value;
+    // ... بقية الحقول ...
+    
+    try {
+        // تأكد من وجود مستخدم مسجل الدخول
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('يجب تسجيل الدخول أولاً');
+            return;
+        }
+        
+        // رفع الصورة إلى Firebase Storage
+        const storageRef = storage.ref()
+            .child('technicians/' + user.uid + '/' + Date.now() + '_' + selectedImage.name);
+            
+        const uploadTask = storageRef.put(selectedImage);
+        
+        uploadTask.on('state_changed',
+            null,
+            (error) => {
+                console.error('Upload error:', error);
+                alert('حدث خطأ أثناء رفع الصورة: ' + error.message);
+            },
+            async () => {
+                try {
+                    // الحصول على رابط الصورة
+                    const photoURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    
+                    // حفظ بيانات الفني في Firestore
+                    const techData = {
+                        name: name,
+                        specialty: specialty,
+                        // ... بقية الحقول ...
+                        photoURL: photoURL,
+                        addedBy: user.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    await db.collection('technicians').add(techData);
+                    alert('تم إضافة الفني بنجاح!');
+                    resetForm();
+                } catch (error) {
+                    console.error('Error adding technician:', error);
+                    alert('حدث خطأ أثناء إضافة الفني: ' + error.message);
+                }
+            }
+        );
+    } catch (error) {
+        console.error('Error:', error);
+        alert('حدث خطأ: ' + error.message);
+    }
+});
+
+        // إعادة تعيين النموذج
+        function resetForm() {
+            document.getElementById('tech-form').reset();
+            document.getElementById('preview-image').style.display = 'none';
+            document.querySelector('#image-upload .upload-icon').style.display = 'block';
+            document.querySelector('#image-upload p').textContent = 'انقر لرفع صورة الفني';
+            skills = [];
+            renderSkills();
+            
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            
+            selectedImage = null;
+            selectedLocation = null;
+        }
+
+        
+
+        // تهيئة التطبيق عند التحميل
+        window.addEventListener('DOMContentLoaded', initMap);
+    </script>
+</body>
+</html>
