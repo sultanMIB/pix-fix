@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فنيون - خدمات منزلية متكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            max-width: 414px;
+            margin: 0 auto;
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0,0,0,0.1);
+        }
+        
+        .app-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background-color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-actions span {
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .auth-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .auth-tab.active {
+            border-bottom: 2px solid #4CAF50;
+            color: #4CAF50;
+            font-weight: 500;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .auth-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .auth-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* Map Section */
+        .map-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transition: all 0.5s ease;
+            z-index: 900;
+        }
+        
+        .map-section.collapsed {
+            bottom: 60%;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 75px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1000;
+        }
+        
+        .map-search {
+            flex: 1;
+            background-color: white;
+            border-radius: 25px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-search input {
+            border: none;
+            background: transparent;
+            flex: 1;
+            padding: 5px;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .map-type-btn {
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        
+        /* Nearby Technicians */
+        .nearby-tech {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -50%;
+            height: 60%;
+            background-color: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+            z-index: 950;
+            overflow-y: auto;
+        }
+        
+        .nearby-tech.visible {
+            bottom: 0;
+        }
+        
+        .drag-handle {
+            width: 40px;
+            height: 5px;
+            background-color: #ddd;
+            border-radius: 3px;
+            margin: 0 auto 15px auto;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .see-all {
+            font-size: 14px;
+            color: #4CAF50;
+            cursor: pointer;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            border: 1px solid #4CAF50;
+            background: white;
+            color: #4CAF50;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .tech-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .tech-card {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tech-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .tech-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .tech-info {
+            flex: 1;
+        }
+        
+        .tech-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .tech-specialty {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .tech-distance {
+            font-size: 12px;
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .tech-rating {
+            color: #FFC107;
+            font-size: 13px;
+        }
+        
+        .tech-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            min-width: 80px;
+        }
+        
+        .tech-price {
+            font-weight: 600;
+            color: #4CAF50;
+        }
+        
+        .book-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .book-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* Booking Modal */
+        .booking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .booking-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            background-color: white;
+            border-top: 1px solid #eee;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            flex: 1;
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            color: #888;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .nav-item.active .nav-icon,
+        .nav-item.active .nav-label {
+            color: #4CAF50;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner-inner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .technicians-counter {
+            background-color: #fe7004;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .technicians-counter #counter {
+            font-weight: 700;
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .no-technicians {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .no-technicians img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Notifications Modal */
+        .notifications-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notifications-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Home Screen */
+        .home-screen {
+            display: block;
+            padding: 15px;
+            overflow-y: auto;
+            height: 100%;
+            background-color: #f9f9f9;
+            padding-bottom: 70px;
+        }
+
+        .home-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .service-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .service-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .service-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .service-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .home-features {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Bookings Screen */
+        .bookings-screen {
+            display: none;
+            padding: 15px;
+            overflow-y: auto;
+            height: 100%;
+            background-color: #f9f9f9;
+            padding-bottom: 70px;
+        }
+
+        .booking-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .booking-header-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .booking-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background-color: #D1ECF1;
+            color: #0C5460;
+        }
+
+        .status-completed {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+
+        /* Profile Screen */
+        .profile-screen {
+            display: none;
+            padding: 15px;
+            overflow-y: auto;
+            height: 100%;
+            background-color: #f9f9f9;
+            padding-bottom: 70px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            background-color: #4CAF50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 40px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .profile-menu {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .menu-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            width: 30px;
+        }
+
+        /* Map Type Modal */
+        .map-type-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .map-type-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 300px;
+        }
+
+        .map-type-option {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s ease;
+        }
+
+        .map-type-option:last-child {
+            border-bottom: none;
+        }
+
+        .map-type-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .map-type-option.active {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #f9f9f9;
+            z-index: 4000;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error-content {
+            max-width: 300px;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">فنيون</div>
+            <div class="header-actions">
+                <span id="notification-icon">🔔</span>
+                <span id="auth-icon">👤</span>
+            </div>
+        </div>
+
+        <!-- Home Screen -->
+        <div class="home-screen" id="homeScreen">
+            <div class="home-header">
+                <div class="welcome-text" id="welcome-text">مرحباً بك في فنيون</div>
+                <p>اختر الخدمة التي تحتاجها</p>
+            </div>
+            
+            <div class="services-grid">
+                <div class="service-card" data-service="plumbing">
+                    <div class="service-icon">🔧</div>
+                    <div class="service-name">سباكة</div>
+                    <div class="service-desc">إصلاح تسريبات المياه والأنابيب</div>
+                </div>
+                <div class="service-card" data-service="electrical">
+                    <div class="service-icon">⚡</div>
+                    <div class="service-name">كهرباء</div>
+                    <div class="service-desc">إصلاح الأعطال الكهربائية والتركيبات</div>
+                </div>
+                <div class="service-card" data-service="ac">
+                    <div class="service-icon">❄️</div>
+                    <div class="service-name">تكييف</div>
+                    <div class="service-desc">صيانة وتنظيف مكيفات الهواء</div>
+                </div>
+                <div class="service-card" data-service="painting">
+                    <div class="service-icon">🎨</div>
+                    <div class="service-name">دهان</div>
+                    <div class="service-desc">دهان الجدران والأسقف والديكورات</div>
+                </div>
+                <div class="service-card" data-service="carpentry">
+                    <div class="service-icon">🪚</div>
+                    <div class="service-name">نجارة</div>
+                    <div class="service-desc">تصنيع وإصلاح الأثاث والنجارة</div>
+                </div>
+                <div class="service-card" data-service="cleaning">
+                    <div class="service-icon">🧹</div>
+                    <div class="service-name">تنظيف</div>
+                    <div class="service-desc">خدمات التنظيف المنزلي والشامل</div>
+                </div>
+            </div>
+            
+            <div class="home-features">
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <div class="feature-text">
+                        <div class="feature-title">خدمة سريعة</div>
+                        <div class="feature-desc">وصول الفنيين في أقل من 60 دقيقة</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⭐</div>
+                    <div class="feature-text">
+                        <div class="feature-title">فنيون معتمدون</div>
+                        <div class="feature-desc">جميع الفنيين مؤهلون ومراجعتهم متاحة</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💳</div>
+                    <div class="feature-text">
+                        <div class="feature-title">دفع آمن</div>
+                        <div class="feature-desc">دفع إلكتروني آمن بعد إتمام الخدمة</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="auth-btn" id="go-to-map-btn">عرض الفنيين على الخريطة</button>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section" id="mapSection" style="display: none;">
+            <div id="map"></div>
+            <div class="map-controls">
+                <div class="map-search">
+                    <span>🔍</span>
+                    <input type="text" id="map-search-input" placeholder="ابحث عن موقع...">
+                </div>
+                <div class="map-type-btn" id="map-type-btn">
+                    <span>🗺️</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nearby Technicians -->
+        <div class="nearby-tech" id="techSection" style="display: none;">
+            <div class="drag-handle"></div>
+            <div class="section-title">
+                <span>الفنيون المتاحون</span>
+                <span class="see-all" id="see-all">عرض الكل</span>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="nearby">القريبون</button>
+                <button class="filter-btn" data-filter="top-rated">الأعلى تقييماً</button>
+                <button class="filter-btn" data-filter="cheapest">الأقل سعراً</button>
+            </div>
+            
+            <div class="technicians-counter">
+                <span id="counter">0</span>
+                <span>فني متاح</span>
+            </div>
+            
+            <div class="tech-list" id="tech-list">
+                <!-- سيتم ملؤها ديناميكيًا -->
+            </div>
+        </div>
+
+        <!-- Bookings Screen -->
+        <div class="bookings-screen" id="bookingsScreen" style="display: none;">
+            <div class="section-title">حجوزاتي</div>
+            
+            <div id="bookings-list">
+                <!-- سيتم ملؤها ديناميكيًا -->
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="profile-screen" id="profileScreen" style="display: none;">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-avatar">
+                    👤
+                </div>
+                <div class="profile-name" id="profile-name">زائر</div>
+                <div class="profile-email" id="profile-email">لم تقم بتسجيل الدخول</div>
+            </div>
+            
+            <div class="profile-menu">
+                <div class="menu-item" id="edit-profile">
+                    <div class="menu-icon">👤</div>
+                    <div>تعديل الملف الشخصي</div>
+                </div>
+                <div class="menu-item" id="my-addresses">
+                    <div class="menu-icon">📍</div>
+                    <div>عناويني</div>
+                </div>
+                <div class="menu-item" id="payment-methods">
+                    <div class="menu-icon">💳</div>
+                    <div>طرق الدفع</div>
+                </div>
+                <div class="menu-item" id="settings">
+                    <div class="menu-icon">⚙️</div>
+                    <div>الإعدادات</div>
+                </div>
+                <div class="menu-item" id="help-support">
+                    <div class="menu-icon">❓</div>
+                    <div>المساعدة والدعم</div>
+                </div>
+                <div class="menu-item" id="logout-btn">
+                    <div class="menu-icon">🚪</div>
+                    <div>تسجيل الخروج</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" id="nav-home">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">الرئيسية</div>
+            </div>
+            <div class="nav-item" id="nav-map">
+                <div class="nav-icon">🗺️</div>
+                <div class="nav-label">الخريطة</div>
+            </div>
+            <div class="nav-item" id="nav-bookings">
+                <div class="nav-icon">📋</div>
+                <div class="nav-label">حجوزاتي</div>
+            </div>
+            <div class="nav-item" id="nav-profile">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">حسابي</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-content">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="login-tab">تسجيل الدخول</div>
+                <div class="auth-tab" id="register-tab">تسجيل جديد</div>
+            </div>
+            
+            <div class="auth-form active" id="login-form">
+                <div class="form-group">
+                    <label for="login-email">البريد الإلكتروني</label>
+                    <input type="email" id="login-email" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">كلمة المرور</label>
+                    <input type="password" id="login-password" placeholder="أدخل كلمة المرور">
+                </div>
+                <button class="auth-btn" id="login-btn">تسجيل الدخول</button>
+            </div>
+            
+            <div class="auth-form" id="register-form">
+                <div class="form-group">
+                    <label for="register-name">الاسم الكامل</label>
+                    <input type="text" id="register-name" placeholder="أدخل اسمك الكامل">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">البريد الإلكتروني</label>
+                    <input type="email" id="register-email" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">كلمة المرور</label>
+                    <input type="password" id="register-password" placeholder="أدخل كلمة المرور">
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">رقم الهاتف</label>
+                    <input type="tel" id="register-phone" placeholder="أدخل رقم هاتفك">
+                </div>
+                <button class="auth-btn" id="register-btn">تسجيل حساب جديد</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Modal -->
+    <div class="booking-modal" id="booking-modal">
+        <div class="booking-content">
+            <div class="booking-header">
+                <h3 id="booking-title">حجز فني</h3>
+                <button class="close-btn" id="close-booking-modal">✕</button>
+            </div>
+            
+            <div id="booking-details">
+                <!-- سيتم ملؤها ديناميكيًا -->
+            </div>
+            
+            <button class="auth-btn" id="confirm-booking-btn" style="margin-top: 15px;">تأكيد الحجز</button>
+        </div>
+    </div>
+    
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notifications-modal">
+        <div class="notifications-content">
+            <div class="booking-header">
+                <h3>الإشعارات</h3>
+                <button class="close-btn" id="close-notifications-modal">✕</button>
+            </div>
+            
+            <div id="notifications-list">
+                <div class="notification-item">
+                    <div class="notification-title">تم تأكيد حجزك</div>
+                    <div class="notification-desc">تم تأكيد حجزك مع الفني أحمد محمد</div>
+                    <div class="notification-time">منذ 5 دقائق</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-title">عرض خاص</div>
+                    <div class="notification-desc">خصم 20% على خدمات السباكة هذا الأسبوع</div>
+                    <div class="notification-time">منذ يومين</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-title">تقييم الخدمة</div>
+                    <div class="notification-desc">كيف كانت تجربتك مع الفني محمد علي؟</div>
+                    <div class="notification-time">منذ 3 أيام</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Type Modal -->
+    <div class="map-type-modal" id="map-type-modal">
+        <div class="map-type-content">
+            <div class="booking-header">
+                <h3>نوع الخريطة</h3>
+                <button class="close-btn" id="close-map-type-modal">✕</button>
+            </div>
+            
+            <div class="map-type-option active" data-type="standard">
+                <span>🗺️</span>
+                <span>الخريطة العادية</span>
+            </div>
+            <div class="map-type-option" data-type="satellite">
+                <span>🛰️</span>
+                <span>القمر الصناعي</span>
+            </div>
+            <div class="map-type-option" data-type="terrain">
+                <span>⛰️</span>
+                <span>التضاريس</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="spinner" id="spinner">
+        <div class="spinner-inner"></div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="error-message">
+        <div class="error-content">
+            <div class="error-icon">⚠️</div>
+            <h2 style="color: #f44336; margin-bottom: 15px;">خطأ في تحميل التطبيق</h2>
+            <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">
+                تعذر تحميل التطبيق بشكل صحيح. يرجى التحقق من اتصال الإنترنت وإعادة تحميل الصفحة.
+            </p>
+            <button class="auth-btn" onclick="window.location.reload()">إعادة تحميل الصفحة</button>
+        </div>
+    </div>
+
+    <!-- Firebase and other scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+
+        // جلب بيانات الفنيين الحقيقية من Firebase
+async function loadTechnicians() {
+    showSpinner();
+    try {
+        const querySnapshot = await db.collection("technicians").get();
+        technicians = [];
+        clearTechMarkers();
+        
+        querySnapshot.forEach((doc) => {
+            const tech = doc.data();
+            tech.id = doc.id;
+            
+            // حساب المسافة إذا كان موقع المستخدم معروفاً
+            if (userLocation.lat && userLocation.lng && tech.location) {
+                tech.distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    tech.location.latitude,
+                    tech.location.longitude
+                );
+            }
+            
+            technicians.push(tech);
+            if (tech.location) {
+                addTechMarker(tech);
+            }
+        });
+        
+        applyFilter(currentFilter);
+        
+    } catch (error) {
+        console.error("Error loading technicians:", error);
+        showNotification("حدث خطأ في تحميل بيانات الفنيين", "error");
+        
+        // استخدام بيانات وهمية كبديل
+        loadMockTechnicians();
+    } finally {
+        hideSpinner();
+    }
+}
+
+// بيانات وهمية احتياطية
+function loadMockTechnicians() {
+    technicians = [
+        {
+            id: '1',
+            name: 'أحمد محمد',
+            specialty: 'سباكة',
+            rating: 4.5,
+            price: 80,
+            location: { 
+                latitude: 29.108841378345062, 
+                longitude: 48.107065753442264 
+            },
+            photoURL: '',
+            experience: '5 سنوات',
+            description: 'متخصص في إصلاح التسريبات وتركيب الأدوات الصحية'
+        },
+        {
+            id: '2',
+            name: 'محمد علي',
+            specialty: 'كهرباء',
+            rating: 4.2,
+            price: 70,
+            location: { 
+                latitude: 29.118841378345062, 
+                longitude: 48.117065753442264 
+            },
+            photoURL: '',
+            experience: '3 سنوات',
+            description: 'خبير في الأعطال الكهربائية والتركيبات'
+        }
+    ];
+    
+    clearTechMarkers();
+    technicians.forEach(tech => {
+        if (tech.location) {
+            addTechMarker(tech);
+        }
+    });
+    applyFilter(currentFilter);
+}
+
+// جلب الحجوزات الحقيقية من Firebase
+async function loadUserBookings() {
+    if (!currentUser) {
+        showLoginPrompt();
+        return;
+    }
+    
+    showSpinner();
+    
+    try {
+        const querySnapshot = await db.collection("bookings")
+            .where("userId", "==", currentUser.uid)
+            .orderBy("createdAt", "desc")
+            .get();
+        
+        bookingsList.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            showNoBookingsMessage();
+        } else {
+            querySnapshot.forEach((doc) => {
+                const booking = doc.data();
+                renderBookingCard(booking);
+            });
+        }
+    } catch (error) {
+        console.error("Error loading bookings:", error);
+        showNotification("حدث خطأ في تحميل الحجوزات", "error");
+        loadMockBookings();
+    } finally {
+        hideSpinner();
+    }
+}
+
+
+        // الانتظار حتى تحميل الصفحة بالكامل
+        document.addEventListener('DOMContentLoaded', function() {
+            // التحقق من تحميل Firebase
+            if (typeof firebase === 'undefined') {
+                document.getElementById('error-message').style.display = 'flex';
+                return;
+            }
+
+            try
+            
+            {
+                // تهيئة Firebase
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCpePdjO7sNPZ9uc32qa6GcO9vF7CXZ6wA",
+                    authDomain: "gotest-w3g8on.firebaseapp.com",
+                    projectId: "gotest-w3g8on",
+                    storageBucket: "gotest-w3g8on.appspot.com",
+                    messagingSenderId: "399090151688",
+                    appId: "1:399090151688:web:dd5bfb2c0192fd99ab7cbd"
+                };
+
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                const db = firebase.firestore();
+                const auth = firebase.auth();
+
+                // بدء التطبيق
+                startApplication(db, auth);
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                document.getElementById('error-message').style.display = 'flex';
+            }
+        });
+
+        function startApplication(db, auth) {
+            // متغيرات التطبيق
+            let currentUser = null;
+            let userData = null;
+            let technicians = [];
+            let userLocation = { lat: 29.108841378345062, lng: 48.107065753442264 };
+            let selectedTech = null;
+            let map;
+            let techMarkers = [];
+            let userMarker = null;
+            let searchCircle = null;
+            let currentFilter = 'all';
+            let currentMapType = 'standard';
+
+            // عناصر DOM
+            const authModal = document.getElementById('auth-modal');
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('login-btn');
+            const registerBtn = document.getElementById('register-btn');
+            const authIcon = document.getElementById('auth-icon');
+            const bookingModal = document.getElementById('booking-modal');
+            const closeBookingModal = document.getElementById('close-booking-modal');
+            const confirmBookingBtn = document.getElementById('confirm-booking-btn');
+            const bookingDetails = document.getElementById('booking-details');
+            const spinner = document.getElementById('spinner');
+            const notification = document.getElementById('notification');
+            const techList = document.getElementById('tech-list');
+            const seeAllBtn = document.getElementById('see-all');
+            const mapSearchInput = document.getElementById('map-search-input');
+            const mapTypeBtn = document.getElementById('map-type-btn');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationsModal = document.getElementById('notifications-modal');
+            const closeNotificationsModal = document.getElementById('close-notifications-modal');
+            const mapTypeModal = document.getElementById('map-type-modal');
+            const closeMapTypeModal = document.getElementById('close-map-type-modal');
+            const mapTypeOptions = document.querySelectorAll('.map-type-option');
+            const navHome = document.getElementById('nav-home');
+            const navMap = document.getElementById('nav-map');
+            const navBookings = document.getElementById('nav-bookings');
+            const navProfile = document.getElementById('nav-profile');
+            const homeScreen = document.getElementById('homeScreen');
+            const bookingsScreen = document.getElementById('bookingsScreen');
+            const profileScreen = document.getElementById('profileScreen');
+            const mapSection = document.getElementById('mapSection');
+            const techSection = document.getElementById('techSection');
+            const welcomeText = document.getElementById('welcome-text');
+            const goToMapBtn = document.getElementById('go-to-map-btn');
+            const bookingsList = document.getElementById('bookings-list');
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileName = document.getElementById('profile-name');
+            const profileEmail = document.getElementById('profile-email');
+            const logoutBtn = document.getElementById('logout-btn');
+            const serviceCards = document.querySelectorAll('.service-card');
+
+            // تهيئة الخريطة
+            function initMap() {
+                map = L.map('map').setView([userLocation.lat, userLocation.lng], 14);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                updateUserMarker();
+                addSearchCircle();
+            }
+
+            // تغيير نوع الخريطة
+            function changeMapType(type) {
+                if (map) {
+                    map.eachLayer((layer) => {
+                        if (layer instanceof L.TileLayer) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    let tileLayer;
+                    switch(type) {
+                        case 'satellite':
+                            tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                            });
+                            break;
+                        case 'terrain':
+                            tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                                attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+                            });
+                            break;
+                        default:
+                            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            });
+                    }
+
+                    tileLayer.addTo(map);
+                    currentMapType = type;
+                    
+                    // تحديث الخيارات النشطة
+                    mapTypeOptions.forEach(option => {
+                        if (option.getAttribute('data-type') === type) {
+                            option.classList.add('active');
+                        } else {
+                            option.classList.remove('active');
+                        }
+                    });
+                }
+            }
+
+            // تحديث علامة موقع المستخدم
+            function updateUserMarker() {
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+                
+                userMarker = L.marker([userLocation.lat, userLocation.lng]).addTo(map)
+                    .bindPopup("<b>موقعك الحالي</b>")
+                    .openPopup();
+            }
+
+            // عداد الفنيين
+            function animateCounter(targetCount, duration = 1500) {
+                const counterElement = document.getElementById('counter');
+                const start = 0;
+                const increment = targetCount / (duration / 16);
+                
+                let current = start;
+                const animate = () => {
+                    current += increment;
+                    if (current < targetCount) {
+                        counterElement.textContent = Math.floor(current);
+                        requestAnimationFrame(animate);
+                    } else {
+                        counterElement.textContent = targetCount;
+                        updateCounterText(targetCount);
+                    }
+                };
+                animate();
+            }
+
+            function updateCounterText(count) {
+                const textElement = document.querySelector('.technicians-counter span:last-child');
+                textElement.textContent = count === 1 ? 'فني متاح' : 'فني متاح';
+            }
+
+            // إضافة دائرة البحث
+            function addSearchCircle() {
+                if (searchCircle) {
+                    map.removeLayer(searchCircle);
+                }
+                
+                searchCircle = L.circle([userLocation.lat, userLocation.lng], {
+                    color: '#4CAF50',
+                    fillColor: '#4CAF50',
+                    fillOpacity: 0.1,
+                    radius: 1000
+                }).addTo(map);
+            }
+
+            // جلب بيانات الفنيين
+            async function loadTechnicians() {
+                showSpinner();
+                try {
+                    // بيانات وهمية للفنيين (بدلاً من Firebase)
+                    technicians = [
+                        {
+                            id: '1',
+                            name: 'أحمد محمد',
+                            specialty: 'سباكة',
+                            rating: 4.5,
+                            price: 80,
+                            location: { latitude: 29.108841378345062, longitude: 48.107065753442264 },
+                            distance: 0.5
+                        },
+                        {
+                            id: '2',
+                            name: 'محمد علي',
+                            specialty: 'كهرباء',
+                            rating: 4.2,
+                            price: 70,
+                            location: { latitude: 29.118841378345062, longitude: 48.117065753442264 },
+                            distance: 1.2
+                        },
+                        {
+                            id: '3',
+                            name: 'خالد إبراهيم',
+                            specialty: 'تكييف',
+                            rating: 4.8,
+                            price: 100,
+                            location: { latitude: 29.098841378345062, longitude: 48.097065753442264 },
+                            distance: 0.8
+                        },
+                        {
+                            id: '4',
+                            name: 'سعيد حسن',
+                            specialty: 'دهان',
+                            rating: 4.0,
+                            price: 60,
+                            location: { latitude: 29.128841378345062, longitude: 48.127065753442264 },
+                            distance: 2.1
+                        }
+                    ];
+                    
+                    clearTechMarkers();
+                    
+                    technicians.forEach(tech => {
+                        if (tech.location) {
+                            addTechMarker(tech);
+                        }
+                    });
+                    
+                    applyFilter(currentFilter);
+                    
+                } catch (error) {
+                    console.error("Error loading technicians:", error);
+                    showNotification("حدث خطأ في تحميل بيانات الفنيين", "error");
+                } finally {
+                    hideSpinner();
+                }
+            }
+
+            // إضافة علامة فني على الخريطة
+            function addTechMarker(tech) {
+                const marker = L.marker([tech.location.latitude, tech.location.longitude]).addTo(map)
+                    .bindPopup(`
+                        <b>${tech.name || 'فني'}</b><br>
+                        ${tech.specialty || 'خدمات عامة'}<br>
+                        ★ ${tech.rating ? tech.rating.toFixed(1) : 'جديد'}<br>
+                        ${tech.distance ? `🛵 ${tech.distance.toFixed(1)} كم` : ''}
+                    `);
+                
+                techMarkers.push(marker);
+            }
+
+            // مسح جميع علامات الفنيين
+            function clearTechMarkers() {
+                techMarkers.forEach(marker => map.removeLayer(marker));
+                techMarkers = [];
+            }
+
+            // تطبيق الفلتر
+            function applyFilter(filterType) {
+                currentFilter = filterType;
+                let filteredTechs = [...technicians];
+                let message = '';
+                
+                switch(filterType) {
+                    case 'nearby':
+                        filteredTechs = technicians.filter(tech => tech.distance && tech.distance <= 10)
+                                                 .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+                        message = `الفنيين القريبين (${filteredTechs.length})`;
+                        break;
+                    case 'top-rated':
+                        filteredTechs = technicians.filter(tech => tech.rating >= 3.5)
+                                                 .sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                        message = `الأعلى تقييماً (${filteredTechs.length})`;
+                        break;
+                    case 'cheapest':
+                        filteredTechs = technicians.filter(tech => tech.price)
+                                                 .sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+                        message = `الأقل سعراً (${filteredTechs.length})`;
+                        break;
+                    default:
+                        filteredTechs = technicians;
+                        message = `جميع الفنيين (${filteredTechs.length})`;
+                }
+                
+                renderTechniciansList(filteredTechs);
+                animateCounter(filteredTechs.length);
+                
+                // تحديث عنوان القسم
+                document.querySelector('.section-title span:first-child').textContent = message;
+            }
+
+            // عرض قائمة الفنيين
+            function renderTechniciansList(techsToShow = technicians) {
+                techList.innerHTML = '';
+                
+                if (techsToShow.length === 0) {
+                    techList.innerHTML = `
+                        <div class="no-technicians">
+                            <div>🔧</div>
+                            <p>لا يوجد فنيون متاحون حالياً</p>
+                            <small>يرجى المحاولة لاحقاً أو تغيير فلتر البحث</small>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                techsToShow.forEach(tech => {
+                    const techCard = document.createElement('div');
+                    techCard.className = 'tech-card';
+                    techCard.innerHTML = `
+                        <div class="tech-avatar">
+                            ${tech.name ? tech.name.charAt(0) : 'ف'}
+                        </div>
+                        <div class="tech-info">
+                            <div class="tech-name">${tech.name || 'فني'}</div>
+                            <div class="tech-specialty">${tech.specialty || 'خدمات عامة'}</div>
+                            ${tech.distance ? `<div class="tech-distance">🛵 ${tech.distance.toFixed(1)} كم</div>` : '<div class="tech-distance">📍 متاح</div>'}
+                            <div class="tech-rating">${getRatingStars(tech.rating || 0)} (${tech.rating ? tech.rating.toFixed(1) : 'جديد'})</div>
+                        </div>
+                        <div class="tech-actions">
+                            <div class="tech-price">${tech.price || '--'} ر.س/ساعة</div>
+                            <button class="book-btn" data-id="${tech.id}">حجز</button>
+                        </div>
+                    `;
+                    
+                    techList.appendChild(techCard);
+                });
+                
+                // إضافة مستمعين لأزرار الحجز
+                document.querySelectorAll('.book-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const techId = this.getAttribute('data-id');
+                        selectedTech = technicians.find(t => t.id === techId);
+                        if (selectedTech) {
+                            showBookingModal();
+                        } else {
+                            showNotification("لم يتم العثور على بيانات الفني", "error");
+                        }
+                    });
+                });
+            }
+
+            // عرض نافذة الحجز
+            function showBookingModal() {
+                if (!selectedTech) {
+                    showNotification("لم يتم اختيار فني للحجز", "error");
+                    return;
+                }
+                
+                if (!currentUser) {
+                    showAuthModal();
+                    showNotification("يجب تسجيل الدخول أولاً", "warning");
+                    return;
+                }
+                
+                bookingDetails.innerHTML = `
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 80px; height: 80px; border-radius: 10px; overflow: hidden; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            ${selectedTech.name ? selectedTech.name.charAt(0) : 'ف'}
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 5px;">${selectedTech.name || 'فني'}</h4>
+                            <p style="color: #666; margin-bottom: 5px;">${selectedTech.specialty || 'خدمات عامة'}</p>
+                            <p style="color: #4CAF50; font-weight: 600;">${selectedTech.price || '--'} ر.س/ساعة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking-date">تاريخ الحجز</label>
+                        <input type="date" id="booking-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking-time">وقت الحجز</label>
+                        <select id="booking-time" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="08:00">8:00 صباحاً</option>
+                            <option value="10:00">10:00 صباحاً</option>
+                            <option value="12:00">12:00 ظهراً</option>
+                            <option value="14:00">2:00 مساءً</option>
+                            <option value="16:00">4:00 مساءً</option>
+                            <option value="18:00">6:00 مساءً</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking-notes">ملاحظات إضافية</label>
+                        <textarea id="booking-notes" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" placeholder="أي ملاحظات أو تفاصيل إضافية"></textarea>
+                    </div>
+                `;
+                
+                // تعيين تاريخ اليوم كحد أدنى
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('booking-date').min = today;
+                
+                bookingModal.style.display = 'flex';
+            }
+
+            // تأكيد الحجز
+            async function confirmBooking() {
+                if (!selectedTech) {
+                    showNotification("لم يتم اختيار فني للحجز", "error");
+                    return;
+                }
+
+                const date = document.getElementById('booking-date').value;
+                const time = document.getElementById('booking-time').value;
+                const notes = document.getElementById('booking-notes').value;
+                
+                if (!date) {
+                    showNotification("يجب اختيار تاريخ الحجز", "warning");
+                    return;
+                }
+                
+                showSpinner();
+                
+                try {
+                    const bookingData = {
+                        userId: currentUser.uid,
+                        userName: userData?.name || 'مستخدم',
+                        userPhone: userData?.phone || 'غير محدد',
+                        technicianId: selectedTech.id,
+                        technicianName: selectedTech.name || 'فني',
+                        serviceType: selectedTech.specialty || 'خدمات عامة',
+                        date: date,
+                        time: time,
+                        notes: notes,
+                        status: "pending",
+                        price: selectedTech.price || 0,
+                        createdAt: new Date()
+                    };
+                    
+                    // في التطبيق الحقيقي: await db.collection("bookings").add(bookingData);
+                    console.log('Booking data:', bookingData);
+                    
+                    showNotification("تم الحجز بنجاح! سيتم التواصل معك قريباً", "success");
+                    bookingModal.style.display = 'none';
+                    selectedTech = null;
+                } catch (error) {
+                    showNotification("حدث خطأ أثناء الحجز. يرجى المحاولة لاحقاً", "error");
+                    console.error("Error booking technician:", error);
+                } finally {
+                    hideSpinner();
+                }
+            }
+
+            // إنشاء نجوم التقييم
+            function getRatingStars(rating) {
+                const fullStars = Math.floor(rating);
+                const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+                const emptyStars = 5 - fullStars - halfStar;
+                
+                return '★'.repeat(fullStars) + '☆'.repeat(halfStar) + '☆'.repeat(emptyStars);
+            }
+
+            // نظام المصادقة
+            function initAuth() {
+                auth.onAuthStateChanged(async (user) => {
+                    currentUser = user;
+                    
+                    if (user) {
+                        try {
+                            // محاكاة بيانات المستخدم
+                            userData = {
+                                name: 'مستخدم فنيون',
+                                email: user.email,
+                                phone: '0551234567',
+                                userType: 'client'
+                            };
+                            
+                            authIcon.textContent = '👤';
+                            updateProfileInfo();
+                            loadUserBookings();
+                            
+                        } catch (error) {
+                            console.error("Error fetching user data:", error);
+                        }
+                    } else {
+                        authIcon.textContent = '🚪';
+                        userData = null;
+                        updateProfileInfo();
+                    }
+                });
+                
+                authIcon.addEventListener('click', () => {
+                    if (currentUser) {
+                        showUserMenu();
+                    } else {
+                        showAuthModal();
+                    }
+                });
+            }
+
+            // تحديث معلومات الملف الشخصي
+            function updateProfileInfo() {
+                if (currentUser && userData) {
+                    profileName.textContent = userData.name || 'مستخدم';
+                    profileEmail.textContent = userData.email || 'بريد إلكتروني غير محدد';
+                    welcomeText.textContent = `مرحباً ${userData.name || 'بالعزيز'}`;
+                    
+                    // إنشاء الأحرف الأولى للصورة الرمزية
+                    const initials = userData.name ? 
+                        userData.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+                    profileAvatar.textContent = initials;
+                    profileAvatar.style.backgroundColor = getRandomColor();
+                } else {
+                    profileName.textContent = 'زائر';
+                    profileEmail.textContent = 'لم تقم بتسجيل الدخول';
+                    welcomeText.textContent = 'مرحباً بك في فنيون';
+                    profileAvatar.textContent = '👤';
+                    profileAvatar.style.backgroundColor = '#4CAF50';
+                }
+            }
+
+            // إنشاء لون عشوائي للصورة الرمزية
+            function getRandomColor() {
+                const colors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#607D8B'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            // تحميل حجوزات المستخدم
+            async function loadUserBookings() {
+                if (!currentUser) {
+                    bookingsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #666;">
+                            <p>يجب تسجيل الدخول لعرض الحجوزات</p>
+                            <button class="auth-btn" style="margin-top: 15px;" id="login-from-bookings">تسجيل الدخول</button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('login-from-bookings')?.addEventListener('click', showAuthModal);
+                    return;
+                }
+                
+                showSpinner();
+                
+                try {
+                    // بيانات حجوزات وهمية
+                    const mockBookings = [
+                        {
+                            technicianName: 'أحمد محمد',
+                            serviceType: 'سباكة',
+                            date: '2024-01-15',
+                            time: '10:00',
+                            status: 'confirmed',
+                            price: 80,
+                            notes: 'إصلاح تسرب في الحمام'
+                        },
+                        {
+                            technicianName: 'محمد علي',
+                            serviceType: 'كهرباء',
+                            date: '2024-01-10',
+                            time: '14:00',
+                            status: 'completed',
+                            price: 70,
+                            notes: ''
+                        }
+                    ];
+                    
+                    bookingsList.innerHTML = '';
+                    
+                    if (mockBookings.length === 0) {
+                        bookingsList.innerHTML = `
+                            <div style="text-align: center; padding: 40px 20px; color: #666;">
+                                <p>لا توجد حجوزات سابقة</p>
+                                <button class="auth-btn" style="margin-top: 15px;" id="book-now-btn">احجز الآن</button>
+                            </div>
+                        `;
+                        
+                        document.getElementById('book-now-btn')?.addEventListener('click', () => {
+                            showScreen('map');
+                        });
+                    } else {
+                        mockBookings.forEach((booking, index) => {
+                            const bookingCard = document.createElement('div');
+                            bookingCard.className = 'booking-card';
+                            
+                            const statusClass = `status-${booking.status || 'pending'}`;
+                            const statusText = getStatusText(booking.status);
+                            
+                            bookingCard.innerHTML = `
+                                <div class="booking-header-card">
+                                    <div>
+                                        <h4>${booking.technicianName || 'فني'}</h4>
+                                        <p style="color: #666; font-size: 14px;">${booking.serviceType || 'خدمة'}</p>
+                                    </div>
+                                    <div class="booking-status ${statusClass}">${statusText}</div>
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <p><strong>التاريخ:</strong> ${formatDate(booking.date)}</p>
+                                    <p><strong>الوقت:</strong> ${booking.time}</p>
+                                    ${booking.notes ? `<p><strong>ملاحظات:</strong> ${booking.notes}</p>` : ''}
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-weight: 600; color: #4CAF50;">${booking.price || '--'} ر.س</div>
+                                    <button class="book-btn" style="padding: 5px 10px; font-size: 12px;">تفاصيل</button>
+                                </div>
+                            `;
+                            
+                            bookingsList.appendChild(bookingCard);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading bookings:", error);
+                    showNotification("حدث خطأ في تحميل الحجوزات", "error");
+                } finally {
+                    hideSpinner();
+                }
+            }
+
+            // الحصول على نص حالة الحجز
+            function getStatusText(status) {
+                const statusMap = {
+                    'pending': 'قيد الانتظار',
+                    'confirmed': 'تم التأكيد',
+                    'completed': 'مكتمل',
+                    'cancelled': 'ملغي'
+                };
+                return statusMap[status] || 'قيد الانتظار';
+            }
+
+            // تنسيق التاريخ
+            function formatDate(dateString) {
+                if (!dateString) return 'غير محدد';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ar-SA');
+            }
+
+            // تسجيل الدخول
+            async function login() {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                if (!email || !password) {
+                    showNotification("يجب إدخال البريد الإلكتروني وكلمة المرور", "warning");
+                    return;
+                }
+                
+                showSpinner();
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    authModal.style.display = 'none';
+                    showNotification("تم تسجيل الدخول بنجاح", "success");
+                } catch (error) {
+                    showNotification("خطأ في تسجيل الدخول: " + error.message, "error");
+                    console.error("Login error:", error);
+                } finally {
+                    hideSpinner();
+                }
+            }
+
+            // تسجيل حساب جديد
+            async function register() {
+                const name = document.getElementById('register-name').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const phone = document.getElementById('register-phone').value;
+                
+                if (!name || !email || !password || !phone) {
+                    showNotification("يجب تعبئة جميع الحقول", "warning");
+                    return;
+                }
+                
+                showSpinner();
+                
+                try {
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        userType: 'client',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    authModal.style.display = 'none';
+                    showNotification("تم إنشاء الحساب بنجاح!", "success");
+                } catch (error) {
+                    showNotification("خطأ في التسجيل: " + error.message, "error");
+                    console.error("Registration error:", error);
+                } finally {
+                    hideSpinner();
+                }
+            }
+
+            // تسجيل الخروج
+            async function logout() {
+                try {
+                    await auth.signOut();
+                    showNotification("تم تسجيل الخروج بنجاح", "success");
+                    showScreen('home');
+                } catch (error) {
+                    showNotification("حدث خطأ أثناء تسجيل الخروج", "error");
+                    console.error("Logout error:", error);
+                }
+            }
+
+            // عرض قائمة المستخدم
+            function showUserMenu() {
+                showScreen('profile');
+            }
+
+            // عرض نافذة المصادقة
+            function showAuthModal() {
+                authModal.style.display = 'flex';
+                loginTab.click();
+            }
+
+            // عرض مؤشر التحميل
+            function showSpinner() {
+                spinner.style.display = 'flex';
+            }
+
+            // إخفاء مؤشر التحميل
+            function hideSpinner() {
+                spinner.style.display = 'none';
+            }
+
+            // عرض الإشعارات
+            function showNotification(message, type = 'info') {
+                notification.textContent = message;
+                notification.style.display = 'block';
+                
+                if (type === 'error') {
+                    notification.style.backgroundColor = '#f44336';
+                } else if (type === 'success') {
+                    notification.style.backgroundColor = '#4CAF50';
+                } else if (type === 'warning') {
+                    notification.style.backgroundColor = '#ff9800';
+                } else {
+                    notification.style.backgroundColor = '#2196F3';
+                }
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
+            // تحديد موقع المستخدم
+            function getUserLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            userLocation = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            
+                            if (map) {
+                                map.setView([userLocation.lat, userLocation.lng], 14);
+                                updateUserMarker();
+                                addSearchCircle();
+                            }
+                            loadTechnicians();
+                        },
+                        (error) => {
+                            console.error("Error getting location:", error);
+                            showNotification("تعذر الحصول على موقعك، سيتم استخدام موقع افتراضي", "warning");
+                            loadTechnicians();
+                        }
+                    );
+                } else {
+                    console.log("Geolocation is not supported by this browser.");
+                    loadTechnicians();
+                }
+            }
+
+            // تبديل الشاشات
+            function showScreen(screenName) {
+                // إخفاء جميع الشاشات
+                homeScreen.style.display = 'none';
+                mapSection.style.display = 'none';
+                techSection.style.display = 'none';
+                bookingsScreen.style.display = 'none';
+                profileScreen.style.display = 'none';
+                
+                // إلغاء تفعيل جميع أزرار التنقل
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // إظهار الشاشة المطلوبة
+                switch(screenName) {
+                    case 'home':
+                        homeScreen.style.display = 'block';
+                        navHome.classList.add('active');
+                        break;
+                    case 'map':
+                        mapSection.style.display = 'block';
+                        techSection.style.display = 'block';
+                        techSection.classList.add('visible');
+                        mapSection.classList.add('collapsed');
+                        navMap.classList.add('active');
+                        loadTechnicians();
+                        break;
+                    case 'bookings':
+                        bookingsScreen.style.display = 'block';
+                        navBookings.classList.add('active');
+                        loadUserBookings();
+                        break;
+                    case 'profile':
+                        profileScreen.style.display = 'block';
+                        navProfile.classList.add('active');
+                        break;
+                }
+            }
+
+            // البحث عن موقع على الخريطة
+            function searchLocation(query) {
+                if (!query.trim()) {
+                    showNotification("يرجى إدخال موقع للبحث", "warning");
+                    return;
+                }
+                
+                // محاكاة البحث
+                showSpinner();
+                
+                setTimeout(() => {
+                    clearTechMarkers();
+                    
+                    // إضافة علامات وهمية لنتائج البحث
+                    const fakeResults = [
+                        { name: "مركز المدينة", lat: userLocation.lat + 0.01, lng: userLocation.lng + 0.01 },
+                        { name: "المجمع التجاري", lat: userLocation.lat - 0.01, lng: userLocation.lng - 0.01 }
+                    ];
+                    
+                    fakeResults.forEach(result => {
+                        const marker = L.marker([result.lat, result.lng]).addTo(map)
+                            .bindPopup(`<b>${result.name}</b>`);
+                        
+                        techMarkers.push(marker);
+                    });
+                    
+                    // تكبير الخريطة لتعرض جميع النتائج
+                    const group = new L.featureGroup(techMarkers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                    
+                    hideSpinner();
+                    showNotification(`تم العثور على ${fakeResults.length} نتيجة لـ "${query}"`, "success");
+                }, 1500);
+            }
+
+            // إعداد جميع الأحداث
+            function setupEventListeners() {
+                // أحداث نافذة المصادقة
+                loginTab.addEventListener('click', () => {
+                    loginTab.classList.add('active');
+                    registerTab.classList.remove('active');
+                    loginForm.classList.add('active');
+                    registerForm.classList.remove('active');
+                });
+                
+                registerTab.addEventListener('click', () => {
+                    registerTab.classList.add('active');
+                    loginTab.classList.remove('active');
+                    registerForm.classList.add('active');
+                    loginForm.classList.remove('active');
+                });
+                
+                loginBtn.addEventListener('click', login);
+                registerBtn.addEventListener('click', register);
+                
+                authModal.addEventListener('click', (e) => {
+                    if (e.target === authModal) {
+                        authModal.style.display = 'none';
+                    }
+                });
+                
+                // أحداث نافذة الحجز
+                closeBookingModal.addEventListener('click', () => {
+                    bookingModal.style.display = 'none';
+                    selectedTech = null;
+                });
+                
+                confirmBookingBtn.addEventListener('click', confirmBooking);
+                
+                bookingModal.addEventListener('click', (e) => {
+                    if (e.target === bookingModal) {
+                        bookingModal.style.display = 'none';
+                        selectedTech = null;
+                    }
+                });
+                
+                // أحداث الفلتر
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        const filterType = this.getAttribute('data-filter');
+                        applyFilter(filterType);
+                    });
+                });
+                
+                // بحث على الخريطة
+                mapSearchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const query = mapSearchInput.value.trim();
+                        searchLocation(query);
+                    }
+                });
+                
+                // زر الإشعارات
+                notificationIcon.addEventListener('click', () => {
+                    notificationsModal.style.display = 'flex';
+                });
+                
+                closeNotificationsModal.addEventListener('click', () => {
+                    notificationsModal.style.display = 'none';
+                });
+                
+                notificationsModal.addEventListener('click', (e) => {
+                    if (e.target === notificationsModal) {
+                        notificationsModal.style.display = 'none';
+                    }
+                });
+                
+                // زر تغيير نوع الخريطة
+                mapTypeBtn.addEventListener('click', () => {
+                    mapTypeModal.style.display = 'flex';
+                });
+                
+                closeMapTypeModal.addEventListener('click', () => {
+                    mapTypeModal.style.display = 'none';
+                });
+                
+                mapTypeModal.addEventListener('click', (e) => {
+                    if (e.target === mapTypeModal) {
+                        mapTypeModal.style.display = 'none';
+                    }
+                });
+                
+                // أحداث خيارات نوع الخريطة
+                mapTypeOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const type = this.getAttribute('data-type');
+                        changeMapType(type);
+                        mapTypeModal.style.display = 'none';
+                    });
+                });
+                
+                // التنقل السفلي
+                navHome.addEventListener('click', () => {
+                    showScreen('home');
+                });
+                
+                navMap.addEventListener('click', () => {
+                    showScreen('map');
+                });
+                
+                navBookings.addEventListener('click', () => {
+                    showScreen('bookings');
+                });
+                
+                navProfile.addEventListener('click', () => {
+                    showScreen('profile');
+                });
+                
+                // زر الانتقال إلى الخريطة من الشاشة الرئيسية
+                goToMapBtn.addEventListener('click', () => {
+                    showScreen('map');
+                });
+                
+                // زر تسجيل الخروج
+                logoutBtn.addEventListener('click', logout);
+                
+                // أحداث بطاقات الخدمات
+                serviceCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        const service = this.getAttribute('data-service');
+                        showScreen('map');
+                        showNotification(`تم اختيار خدمة ${this.querySelector('.service-name').textContent}`, "success");
+                    });
+                });
+                
+                // عرض جميع الفنيين
+                seeAllBtn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-filter="all"]').classList.add('active');
+                    applyFilter('all');
+                });
+            }
+
+            // بدء التطبيق
+            initMap();
+            initAuth();
+            getUserLocation();
+            setupEventListeners();
+            showScreen('home');
+        }
+    </script>
+</body>
+</html>
