@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خدماتي - تطبيق الخدمات المنزلية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        :root {
+            --primary-color: #2A5C8B;
+            --secondary-color: #FF6B35;
+            --accent-color: #4CAF50;
+            --background-color: #F8F9FA;
+            --text-dark: #333333;
+            --text-medium: #666666;
+            --text-light: #888888;
+            --white: #FFFFFF;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-dark);
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 15px;
+            position: relative;
+            min-height: 100vh;
+            background: var(--white);
+        }
+
+        /* Header Styles */
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color), #1e4a6d);
+            color: var(--white);
+            padding: 20px 0 15px 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 15px;
+        }
+
+        .location {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .location i {
+            margin-left: 5px;
+        }
+
+        .time {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .search-bar {
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 50px 15px 15px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar i {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        /* Promo Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #FF6B35, #FF8E53);
+            margin: 20px 15px;
+            padding: 20px;
+            border-radius: 15px;
+            color: var(--white);
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .promo-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .promo-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .book-now-btn {
+            background: var(--white);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .book-now-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Categories Section */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 25px 15px 15px 15px;
+            color: var(--text-dark);
+        }
+
+        .categories-scroll {
+            display: flex;
+            gap: 15px;
+            padding: 0 15px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-card {
+            flex: 0 0 auto;
+            width: 120px;
+            background: var(--white);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), #1e4a6d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px auto;
+            color: var(--white);
+            font-size: 20px;
+        }
+
+        .category-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Technicians List */
+        .technicians-list {
+            display: none;
+            padding: 0 15px 80px 15px;
+        }
+
+        .technicians-list.active {
+            display: block;
+        }
+
+        .technician-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: 1px solid #f0f0f0;
+        }
+
+        .technician-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .technician-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .technician-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            color: var(--white);
+            font-size: 25px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .technician-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .technician-basic-info {
+            flex: 1;
+        }
+
+        .technician-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+
+        .technician-category {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .technician-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .stars {
+            color: #FFC107;
+            margin-left: 5px;
+        }
+
+        .review-count {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+
+        .technician-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .detail-item i {
+            margin-left: 5px;
+            color: var(--primary-color);
+            width: 14px;
+            text-align: center;
+        }
+
+        .technician-location {
+            color: var(--text-medium);
+        }
+
+        .technician-experience {
+            color: var(--text-medium);
+        }
+
+        .technician-availability {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .technician-response-time {
+            color: var(--text-medium);
+        }
+
+        .technician-price-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffecb3 100%);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: var(--text-medium);
+            margin-bottom: 3px;
+        }
+
+        .technician-price {
+            color: var(--secondary-color);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .price-note {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 3px;
+        }
+
+        .technician-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .call-btn {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .call-btn:hover {
+            background-color: #e05a2b;
+        }
+
+        .whatsapp-btn {
+            background-color: #25D366;
+            color: var(--white);
+            border: none;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .whatsapp-btn:hover {
+            background-color: #128C7E;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            padding: 0 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+
+        .filter-buttons::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: 1px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Counter */
+        .technicians-counter {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 15px 15px 15px;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .technicians-counter #counter {
+            font-weight: 700;
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .no-results i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 480px;
+            margin: 0 auto;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-bottom: 70px;
+        }
+
+        /* Page Transitions */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-inner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-top">
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>الرياض - حي الملز</span>
+                </div>
+                <div class="time" id="current-time">9:41</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عن خدمة...">
+                <i class="fas fa-search"></i>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <!-- Promo Banner -->
+                <div class="promo-banner">
+                    <div class="promo-title">خصم يصل إلى 50%!</div>
+                    <div class="promo-subtitle">احجز الآن للحصول على العرض</div>
+                    <button class="book-now-btn">احجز الآن</button>
+                </div>
+
+                <!-- Categories -->
+                <h2 class="section-title">التصنيفات</h2>
+                <div class="categories-scroll" id="categories-container">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+
+                <!-- Technicians Counter -->
+                <div class="technicians-counter">
+                    <span id="counter">0</span>
+                    <span>فني متاح بالقرب منك</span>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">الكل</button>
+                        <button class="filter-btn" data-filter="nearby">الأقرب</button>
+                        <button class="filter-btn" data-filter="top-rated">الأعلى تقييماً</button>
+                        <button class="filter-btn" data-filter="cheapest">الأقل سعراً</button>
+                    </div>
+                </div>
+
+                <!-- Technicians List -->
+                <div class="technicians-list active" id="technicians-list">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+
+            <!-- Bookings Page -->
+            <div id="bookings-page" class="page">
+                <h2 class="section-title">حجوزاتي</h2>
+                <div class="no-results">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>لا توجد حجوزات حالياً</p>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page">
+                <h2 class="section-title">حسابي</h2>
+                <div class="no-results">
+                    <i class="fas fa-user"></i>
+                    <p>يجب تسجيل الدخول لعرض الملف الشخصي</p>
+                    <button class="call-btn" style="margin-top: 15px; background: var(--primary-color);" id="login-btn">
+                        تسجيل الدخول
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="home-page">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-label">الرئيسية</span>
+            </div>
+            <div class="nav-item" data-page="bookings-page">
+                <i class="fas fa-calendar nav-icon"></i>
+                <span class="nav-label">الحجوزات</span>
+            </div>
+            <div class="nav-item" data-page="profile-page">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">حسابي</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="spinner" id="spinner">
+        <div class="spinner-inner"></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpePdjO7sNPZ9uc32qa6GcO9vF7CXZ6wA",
+            authDomain: "gotest-w3g8on.firebaseapp.com",
+            projectId: "gotest-w3g8on",
+            storageBucket: "gotest-w3g8on.appspot.com",
+            messagingSenderId: "399090151688",
+            appId: "1:399090151688:web:dd5bfb2c0192fd99ab7cbd"
+        };
+
+        // تهيئة Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // بيانات التطبيق
+        let technicians = [];
+        let currentFilter = 'all';
+        let currentUser = null;
+
+        // عناصر DOM
+        const categoriesContainer = document.getElementById('categories-container');
+        const techniciansList = document.getElementById('technicians-list');
+        const counterElement = document.getElementById('counter');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+        const spinner = document.getElementById('spinner');
+        const notification = document.getElementById('notification');
+        const currentTimeElement = document.getElementById('current-time');
+        const loginBtn = document.getElementById('login-btn');
+
+        // بيانات التصنيفات
+        const categories = [
+            { id: 1, name: "سباك", icon: "fa-wrench" },
+            { id: 2, name: "نجار", icon: "fa-hammer" },
+            { id: 3, name: "كهربائي", icon: "fa-bolt" },
+            { id: 4, name: "دهان", icon: "fa-paint-roller" },
+            { id: 5, name: "مكافحة حشرات", icon: "fa-bug" },
+            { id: 6, name: "نظافة منزلية", icon: "fa-broom" },
+            { id: 7, name: "تكييف وتبريد", icon: "fa-fan" },
+            { id: 8, name: "حداد", icon: "fa-tools" }
+        ];
+
+        // بيانات تجريبية للفنيين
+        const sampleTechnicians = [
+            {
+                id: 1,
+                name: "أحمد محمد",
+                category: "سباك",
+                rating: 4.8,
+                reviews: 125,
+                location: "الرياض - حي الملز",
+                price: "50 ريال",
+                phone: "+966500000001",
+                experience: "5+ سنوات",
+                availability: "متاح الآن",
+                responseTime: "15-30 دقيقة",
+                description: "فني سباكة محترف مع أكثر من 5 سنوات خبرة في جميع أعمال السباكة المنزلية والتجارية."
+            },
+            {
+                id: 2,
+                name: "خالد عبدالله",
+                category: "نجار",
+                rating: 4.6,
+                reviews: 89,
+                location: "الرياض - حي النخيل",
+                price: "80 ريال",
+                phone: "+966500000002",
+                experience: "7+ سنوات",
+                availability: "متاح خلال ساعتين",
+                responseTime: "30-45 دقيقة",
+                description: "نجار محترف متخصص في أعمال النجارة المنزلية والأثاث."
+            },
+            {
+                id: 3,
+                name: "محمد علي",
+                category: "كهربائي",
+                rating: 4.9,
+                reviews: 203,
+                location: "الرياض - حي العليا",
+                price: "70 ريال",
+                phone: "+966500000003",
+                experience: "8+ سنوات",
+                availability: "متاح الآن",
+                responseTime: "10-20 دقيقة",
+                description: "فني كهرباء معتمد بخبرة تزيد عن 8 سنوات في جميع أعمال الكهرباء المنزلية."
+            },
+            {
+                id: 4,
+                name: "سعيد حسن",
+                category: "نظافة منزلية",
+                rating: 4.7,
+                reviews: 156,
+                location: "الرياض - حي الورود",
+                price: "60 ريال",
+                phone: "+966500000004",
+                experience: "4+ سنوات",
+                availability: "متاح غداً",
+                responseTime: "45-60 دقيقة",
+                description: "متخصص في خدمات التنظيف المنزلي الشامل باستخدام أحدث التقنيات."
+            }
+        ];
+
+        // تحميل التصنيفات
+        function loadCategories() {
+            categoriesContainer.innerHTML = '';
+            
+            categories.forEach(category => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category-card';
+                categoryElement.setAttribute('data-category', category.name);
+                
+                categoryElement.innerHTML = `
+                    <div class="category-icon">
+                        <i class="fas ${category.icon}"></i>
+                    </div>
+                    <div class="category-name">${category.name}</div>
+                `;
+                
+                categoryElement.addEventListener('click', () => {
+                    filterByCategory(category.name);
+                });
+                
+                categoriesContainer.appendChild(categoryElement);
+            });
+        }
+
+        // التصفية حسب التصنيف
+        function filterByCategory(categoryName) {
+            const filteredTechs = technicians.filter(tech => tech.category === categoryName);
+            renderTechniciansList(filteredTechs);
+            animateCounter(filteredTechs.length);
+            
+            // تحديث عنوان القسم
+            document.querySelector('.section-title').textContent = `فنيو ${categoryName}`;
+        }
+
+        // تحميل الفنيين
+        async function loadTechnicians() {
+            showSpinner();
+            try {
+                // محاولة جلب البيانات من Firebase
+                const querySnapshot = await db.collection('technicians').get();
+                
+                if (!querySnapshot.empty) {
+                    technicians = [];
+                    querySnapshot.forEach(doc => {
+                        const tech = doc.data();
+                        tech.id = doc.id;
+                        technicians.push(tech);
+                    });
+                } else {
+                    // استخدام البيانات التجريبية إذا لم توجد بيانات في Firebase
+                    technicians = [...sampleTechnicians];
+                }
+                
+                applyFilter(currentFilter);
+                showNotification("تم تحميل بيانات الفنيين بنجاح", "success");
+                
+            } catch (error) {
+                console.error("Error loading technicians:", error);
+                // استخدام البيانات التجريبية في حالة الخطأ
+                technicians = [...sampleTechnicians];
+                applyFilter(currentFilter);
+                showNotification("تم تحميل البيانات التجريبية", "info");
+            } finally {
+                hideSpinner();
+            }
+        }
+
+        // تطبيق الفلتر
+        function applyFilter(filterType) {
+            currentFilter = filterType;
+            let filteredTechs = [...technicians];
+            
+            switch(filterType) {
+                case 'nearby':
+                    filteredTechs = technicians.slice(0, 3); // محاكاة للأقرب
+                    break;
+                case 'top-rated':
+                    filteredTechs = technicians.filter(tech => tech.rating >= 4.5)
+                                     .sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    break;
+                case 'cheapest':
+                    filteredTechs = technicians.filter(tech => tech.price)
+                                     .sort((a, b) => (parseInt(a.price) || Infinity) - (parseInt(b.price) || Infinity));
+                    break;
+                default:
+                    filteredTechs = technicians;
+            }
+            
+            renderTechniciansList(filteredTechs);
+            animateCounter(filteredTechs.length);
+        }
+
+        // عرض قائمة الفنيين
+        function renderTechniciansList(techsToShow = technicians) {
+            techniciansList.innerHTML = '';
+            
+            if (techsToShow.length === 0) {
+                techniciansList.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-users"></i>
+                        <p>لا يوجد فنيون متاحون حالياً</p>
+                        <small>يرجى المحاولة لاحقاً أو تغيير فلتر البحث</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            techsToShow.forEach(technician => {
+                const techElement = document.createElement('div');
+                techElement.className = 'technician-card';
+                
+                // إنشاء نجوم التقييم
+                const stars = generateStars(technician.rating || 4.0);
+                
+                techElement.innerHTML = `
+                    <div class="technician-header">
+                        <div class="technician-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="technician-basic-info">
+                            <div class="technician-name">${technician.name}</div>
+                            <div class="technician-category">${technician.category}</div>
+                            <div class="technician-rating">
+                                <div class="stars">${stars}</div>
+                                <div class="review-count">(${technician.reviews} تقييم)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="technician-details">
+                        <div class="detail-item technician-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${technician.location}</span>
+                        </div>
+                        <div class="detail-item technician-experience">
+                            <i class="fas fa-briefcase"></i>
+                            <span>${technician.experience}</span>
+                        </div>
+                        <div class="detail-item technician-availability">
+                            <i class="fas fa-clock"></i>
+                            <span>${technician.availability}</span>
+                        </div>
+                        <div class="detail-item technician-response-time">
+                            <i class="fas fa-bolt"></i>
+                            <span>${technician.responseTime}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="technician-price-section">
+                        <div class="price-label">سعر المعاينة</div>
+                        <div class="technician-price">${technician.price}</div>
+                        <div class="price-note">شامل الضريبة - لا توجد رسوم خفية</div>
+                    </div>
+                    
+                    <div class="technician-actions">
+                        <button class="call-btn" data-phone="${technician.phone}">
+                            <i class="fas fa-phone"></i> اتصال
+                        </button>
+                        <button class="whatsapp-btn" data-phone="${technician.phone}">
+                            <i class="fab fa-whatsapp"></i> واتساب
+                        </button>
+                    </div>
+                `;
+                
+                techniciansList.appendChild(techElement);
+            });
+            
+            // إضافة مستمعي الأحداث لأزرار الاتصال
+            document.querySelectorAll('.call-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const phoneNumber = this.getAttribute('data-phone');
+                    if (phoneNumber && phoneNumber !== '') {
+                        window.open(`tel:${phoneNumber}`);
+                    } else {
+                        showNotification("رقم الهاتف غير متوفر حالياً", "warning");
+                    }
+                });
+            });
+            
+            // إضافة مستمعي الأحداث لأزرار الواتساب
+            document.querySelectorAll('.whatsapp-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const phoneNumber = this.getAttribute('data-phone');
+                    if (phoneNumber && phoneNumber !== '') {
+                        const message = 'مرحباً، أنا مهتم بالحصول على خدمتك';
+                        const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                    } else {
+                        showNotification("رقم الواتساب غير متوفر حالياً", "warning");
+                    }
+                });
+            });
+        }
+
+        // عداد الفنيين
+        function animateCounter(targetCount, duration = 1000) {
+            const start = 0;
+            const increment = targetCount / (duration / 16);
+            
+            let current = start;
+            const animate = () => {
+                current += increment;
+                if (current < targetCount) {
+                    counterElement.textContent = Math.floor(current);
+                    requestAnimationFrame(animate);
+                } else {
+                    counterElement.textContent = targetCount;
+                }
+            };
+            animate();
+        }
+
+        // توليد نجوم التقييم
+        function generateStars(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            }
+            
+            const emptyStars = 5 - Math.ceil(rating);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star"></i>';
+            }
+            
+            return stars;
+        }
+
+        // تبديل الصفحات
+        function switchPage(pageId) {
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            navItems.forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+        }
+
+        // تحديث الوقت
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-SA', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            currentTimeElement.textContent = timeString;
+        }
+
+        // عرض مؤشر التحميل
+        function showSpinner() {
+            spinner.style.display = 'flex';
+        }
+
+        // إخفاء مؤشر التحميل
+        function hideSpinner() {
+            spinner.style.display = 'none';
+        }
+
+        // عرض الإشعارات
+        function showNotification(message, type = 'info') {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            if (type === 'error') {
+                notification.style.backgroundColor = '#f44336';
+            } else if (type === 'success') {
+                notification.style.backgroundColor = '#4CAF50';
+            } else if (type === 'warning') {
+                notification.style.backgroundColor = '#ff9800';
+            } else {
+                notification.style.backgroundColor = function name(params) {
+                    
+                }(--primary-color);
+            }
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // تهيئة التطبيق
+        function initApp() {
+            loadCategories();
+            loadTechnicians();
+            updateTime();
+            setInterval(updateTime, 60000); // تحديث الوقت كل دقيقة
+            
+            // أحداث الفلتر
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const filterType = this.getAttribute('data-filter');
+                    applyFilter(filterType);
+                });
+            });
+            
+            // أحداث التنقل
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    switchPage(pageId);
+                });
+            });
+            
+            // حدث تسجيل الدخول
+            loginBtn.addEventListener('click', () => {
+                showNotification("سيتم تطوير نظام التسجيل في الإصدارات القادمة", "info");
+            });
+            
+            // حدث البحث
+            document.querySelector('.search-bar input').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                if (searchTerm.length > 2) {
+                    const filteredTechs = technicians.filter(tech => 
+                        tech.name.toLowerCase().includes(searchTerm) || 
+                        tech.category.toLowerCase().includes(searchTerm)
+                    );
+                    renderTechniciansList(filteredTechs);
+                    animateCounter(filteredTechs.length);
+                } else if (searchTerm.length === 0) {
+                    applyFilter(currentFilter);
+                }
+            });
+            
+            console.log("التطبيق جاهز للاستخدام");
+        }
+
+        // بدء التطبيق عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
